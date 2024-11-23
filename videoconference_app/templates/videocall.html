@@ -24,9 +24,9 @@
             }
 
             const params = getUrlParams(window.location.href);
-            const roomID = params['roomID'] || (Math.floor(Math.random() * 10000) + "");
+            const roomID = params['roomID'];
             const userID = Math.floor(Math.random() * 10000) + "";
-            const userName = "{{ name }}"
+            const userName = "{{ name }}";
             const appID = 2028868635; // change this
             const serverSecret = "f57b818176b3c2dca1f04345c7e52c92"; // change this
             const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
@@ -54,22 +54,17 @@
                 showLayoutButton: true,
             });
 
-            // WebSocket connection
-            const socket = new WebSocket('ws://' + window.location.host + '/ws/randomcall/' + roomID + '/');
-
-            socket.onmessage = function (e) {
-                const data = JSON.parse(e.data);
-                if (data.leave) {
-                    alert(data.message);
-                    window.location.href = '/dashboard';
-                }
-            };
-
-            socket.onclose = function (e) {
-                console.error('Chat socket closed unexpectedly');
+            // Leave room and notify server
+            window.onbeforeunload = function() {
+                fetch(`/leave_room/${roomID}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    credentials: 'same-origin'
+                });
             };
         }
     </script>
 </body>
 </html>
-
